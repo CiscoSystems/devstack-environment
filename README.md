@@ -69,13 +69,22 @@ so OpenStack guests can also run on the controller machine).
 After the VMs are created, they are going to be provisioned via Ansible
 playbooks.
 
-If you have your machines created already and just wish to re-run the
-Ansible provisioning, you can just do:
+
+FAQ
+===
+What if I want a fresh DevStack install?
+----------------------------------------
+There are two ways to go about it:
+
+You can re-run the Ansible provisioning step with:
 
     $ vagrant provision
 
-If you wish to destroy the compute and controller host and restart just
-those two again, you can do these steps:
+This will visit the the existing compute and controller hosts, run
+"unstack.sh" and "clean.sh" before installing DevStack from scratch.
+
+If you wish to destroy the compute and controller host to make sure you
+have a fresh start, you can do these steps:
 
     $ vagrant destroy controller compute-1
     $ vagrant up
@@ -83,8 +92,7 @@ those two again, you can do these steps:
 
 Note that we are avoiding destruction of the cache host. No need to do so.
 
-FAQ
-===
+
 What if I want different IP addresses for my hosts?
 ---------------------------------------------------
 In the Vargantfile you find this section:
