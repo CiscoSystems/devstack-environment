@@ -83,9 +83,10 @@ those two again, you can do these steps:
 
 Note that we are avoiding destruction of the cache host. No need to do so.
 
-
+FAQ
+===
 What if I want different IP addresses for my hosts?
-===================================================
+---------------------------------------------------
 In the Vargantfile you find this section:
 
     servers = {
@@ -111,7 +112,7 @@ Adjust the IP addresses to whatever values you have chosen.
 
 
 What if I just want a single-node DevStack? Or a 5-node DevStack?
-=================================================================
+-----------------------------------------------------------------
 In that case, look at that same section that we have described above in the
 Vagrantfile. Comment our (or remove) the 'compute-1' host. Likewise, do the
 same in the "vagrant_hosts_multi" file. In that case, find the start of the
@@ -122,12 +123,12 @@ If you want more compte hosts, add them in the Vargantfile as well as the
 
 
 Where can I determine what version of DevStack I'm deploying?
-=============================================================
+-------------------------------------------------------------
 Find the "vars/vagrant_extra_vars.yml" file and look for the DEVSTACK section.
 
 
 What if I want to use different modules/tunnels/settings for DevStack?
-======================================================================
+----------------------------------------------------------------------
 The DevStack settings are controller by their 'localrc' files. Please have a
 look at the 'playbooks/templates' directory. In that directory, you can see
 sub-directories, such as "gre". Now look inside there and you can find template
