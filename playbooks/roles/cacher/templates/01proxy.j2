@@ -1,0 +1,1 @@
+Acquire::http::Proxy "http://{{ hostvars[inventory_hostname][NET.pub_eth_interface]['ipv4']['address'] }}:{{ CACHE.apt_cache_port }}";

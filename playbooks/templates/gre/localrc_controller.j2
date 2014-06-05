@@ -1,0 +1,39 @@
+HOST_IP={{ hostvars[inventory_hostname][NET.pub_eth_interface]['ipv4']['address'] }}
+disable_service n-net
+disable_service h-api
+disable_service h-api-cfn
+disable_service h-api-cw
+enable_service neutron
+enable_service tempest
+enable_service q-svc
+enable_service q-agt
+enable_service q-dhcp
+enable_service q-l3
+enable_service q-meta
+enable_service n-cpu
+enable_service q-vpn
+enable_service q-lbaas
+
+MYSQL_PASSWORD=nova
+RABBIT_PASSWORD=nova
+SERVICE_TOKEN=nova
+SERVICE_PASSWORD=nova
+ADMIN_PASSWORD=nova
+LOGDAYS=1
+#OFFLINE=True
+UNDO_REQUIREMENTS=True
+
+Q_PLUGIN=ml2
+ENABLE_TENANT_TUNNELS=True
+TENANT_TUNNEL_RANGE=50:100
+
+VNCSERVER_LISTEN=$HOST_IP
+VNCSERVER_PROXYCLIENT_ADDRESS=$HOST_IP
+
+MULTI_HOST=1
+
+LOGFILE={{ FILES.log_dir }}/stack.sh.log
+SCREEN_LOGDIR={{ FILES.log_dir }}
+
+IMAGE_URLS="http://download.cirros-cloud.net/0.3.2/cirros-0.3.2-x86_64-uec.tar.gz"
+

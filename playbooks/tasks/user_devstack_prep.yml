@@ -1,0 +1,101 @@
+# Copyright 2014 Cisco Systems, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+# @author: Juergen Brendel, Cisco Systems, Inc.
+
+# -----------------------------------------------------------------------------
+# Setup stack user's directory, download DevStack and prepare localrc.
+# -----------------------------------------------------------------------------
+
+---
+
+# If we don't add the github.com key with this keyscan operation first, we will
+# get an interactive block when the git module tries to establish an ssh connection
+# to the server. The block is a prompt that asks us if we want to accept this
+# unknown host. So, doing the scan first avoids this issue.
+- name: Add the key for github.com to the known_host file
+  shell: >
+      ssh-keyscan -H github.com > {{ FILES.stack_user_home_dir }}/.ssh/known_hosts
+      creates={{ FILES.stack_user_home_dir }}/.ssh/known_hosts
+
+#
+# Creation of working directories
+#
+- name: Unstack if it exists already
+  shell: >
+    "{{ FILES.devstack_download_dir }}/unstack.sh"
+    chdir={{ FILES.devstack_download_dir }}
+  ignore_errors: True
+
+- name: Clean if it exists already
+  shell: >
+    "{{ FILES.devstack_download_dir }}/clean.sh"
+    chdir={{ FILES.devstack_download_dir }}
+  ignore_errors: True
+
+- name: Remove any old workspace directories if they existed already
+  shell: sudo rm -rf {{ FILES.workspace_dir }}/*
+  ignore_errors: True
+
+- name: Create workspace directory
+  file: >
+      path={{ FILES.workspace_dir }} state=directory
+      owner={{ USERS.stack_user }}
+      group={{ USERS.stack_user }}
+
+- name: Create directory for our scripts and tempest run logs
+  file: >
+      path={{ FILES.scripts_dir }} state=directory
+      owner={{ USERS.stack_user }}
+      group={{ USERS.stack_user }}
+
+- name: Create directory for logs
+  file: >
+      path={{ FILES.log_dir }} state=directory
+      owner={{ USERS.stack_user }}
+      group={{ USERS.stack_user }}
+
+#
+# Copying of scripts to target machine
+#
+- name: Copy our scripts to the target
+  copy: >
+      src="{{ FILES.local_files_dir }}/controller_setup.sh"
+      dest={{ FILES.scripts_dir }}
+      owner={{ USERS.stack_user }}
+      group={{ USERS.stack_user }}
+
+#
+# Checkout of git repository with specific ref
+#
+- name: Checkout DevStack from git repository
+  shell: >
+      git clone {{ DEVSTACK.repo_url }} {{ FILES.devstack_download_dir }}
+      chdir={{ FILES.workspace_dir }}
+
+- name: Change to stable version
+  shell: >
+      git checkout {{ DEVSTACK.repo_version }}
+      chdir={{ FILES.devstack_download_dir }}
+
+#
+# Place a localrc file into the DevStack directory
+#
+- name: Prepare localrc file
+  template: >
+      src={{ FILES.local_template_dir }}/{{ DEVSTACK.tunnel_type }}/{{ localrc_template_file }}
+      dest={{ FILES.devstack_download_dir }}/localrc 
+      owner={{ USERS.stack_user }}
+      group={{ USERS.stack_user }}
+

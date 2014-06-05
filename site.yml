@@ -1,0 +1,33 @@
+#
+# Complete cluster setup
+# 
+
+---
+
+#
+# Set up the apt cache server.
+#
+- include: playbooks/cacher.yml
+
+#
+# The cache server may have been rebooted. Therefore, we need to wait
+# until it is up before we do anything else. We wait from the cluster
+# hosts (since we might use private IP addresses), rather than from
+# localhost. Therefore, we must make sure to exclude the cache machine
+# itself, since that one is probably not done rebooting at this point.
+#
+- name: waiting for caches to come online
+  hosts: all-hosts:!apt-pip-cache
+  gather_facts: False
+  tasks:
+    - include: playbooks/tasks/wait_for_cache_servers_create.yml
+      when: CACHE.pkg_cache == "create"
+    - include: playbooks/tasks/wait_for_cache_servers_use.yml
+      when: CACHE.pkg_cache == "use"
+
+#
+# Functional setup of cluster servers.
+#
+- include: playbooks/common.yml
+- include: playbooks/devstack_installation.yml
+

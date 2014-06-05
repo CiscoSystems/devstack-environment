@@ -1,0 +1,27 @@
+HOST_IP={{ hostvars[inventory_hostname][NET.pub_eth_interface]['ipv4']['address'] }}
+SERVICE_HOST={{ hostvars[groups['controller-hosts'][0]][NET.pub_eth_interface]['ipv4']['address'] }}
+
+#FLAT_INTERFACE=eth0
+MULTI_HOST=1
+
+MYSQL_PASSWORD=nova
+RABBIT_PASSWORD=nova
+SERVICE_TOKEN=nova
+SERVICE_PASSWORD=nova
+ADMIN_PASSWORD=nova
+
+MYSQL_HOST=$SERVICE_HOST
+RABBIT_HOST=$SERVICE_HOST
+GLANCE_HOSTPORT=$SERVICE_HOST:9292
+ENABLED_SERVICES=n-cpu,neutron,n-api,c-sch,c-api,c-vol,n-novnc,q-agt
+
+Q_PLUGIN=ml2
+ENABLE_TENANT_TUNNELS=True
+TENANT_TUNNEL_RANGE=50:100
+
+VNCSERVER_LISTEN=$HOST_IP
+VNCSERVER_PROXYCLIENT_ADDRESS=$HOST_IP
+
+LOGFILE={{ FILES.log_dir }}/stack.sh.log
+SCREEN_LOGDIR={{ FILES.log_dir }}
+

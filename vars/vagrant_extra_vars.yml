@@ -1,0 +1,73 @@
+# Copyright 2014 Cisco Systems, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+# @author: Juergen Brendel, Cisco Systems, Inc.
+
+# -----------------------------------------------------------------------------
+# These are all the specific variables for your deployment.
+# -----------------------------------------------------------------------------
+
+---
+#
+# Network related configuration
+#
+NET:
+    pub_eth_interface:          "ansible_eth1"  # The interface on which the individual hosts
+                                                # can reach each other. If we configure static
+                                                # addresses in Vagrant, they will be on 'eth1'.
+                                                # For lookup in the Ansible 'facts' dictionary,
+                                                # we need to use the Ansible name of those
+                                                # interfaces: "ansible_eth0", "ansible_eth1", etc.
+
+#
+# Cache related configuration
+#
+# We support the use of a PIP and APT caches. Currently, both need to be located on the
+# same machine. If pkg_cache is set to "create" then a new cache installation is
+# performed. If you already have a chache available, you can just specify "use" and
+# the IP address of the cache machine.
+#
+# No harm is done if you leave the value at "create", Ansible will merely visit the
+# cache machine to ensure that the config of the caches is as desired. However, it
+# will save you a few seconds (maybe 20, depending on your environment?) if you set
+# this to "use" after the cache machine has been fully built.
+#
+CACHE:
+    pkg_cache:                  "create"        # "create" or "use" or "none"
+    pkg_cache_existing_ip_addr: "192.168.99.99" # IP address of cache server. Ignored if "create" or "none".
+    pip_cache_port:             3141
+    apt_cache_port:             3142
+
+#
+# The user that should install/run devstack.
+#
+USERS:
+    stack_user:                 "vagrant"       # User will be created if necessary
+
+#
+# Details about the specific DevStack version and configuration you wish to run
+#
+# Note about the 'tunnel_type': Whatever is specified here will be used to find
+# specific localrc files in the playbooks/templates directory. There should be
+# a sub-directory in the template directory with the name that's specified here.
+#
+# So, in effect, the 'tunnel_type' is actually just a selector on your set of
+# localrc files.
+#
+DEVSTACK:
+    repo_version:               "master"
+    repo_url:                   "git://github.com/openstack-dev/devstack.git"
+    tunnel_type:                "gre"  # Look for directory of that name in template directory
+    result_url:                 "http://<your base OpenStack controller host>/results"
+

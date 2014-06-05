@@ -1,0 +1,105 @@
+# Copyright 2014 Cisco Systems, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+# @author: Juergen Brendel, Cisco Systems, Inc.
+
+# -----------------------------------------------------------------------------
+# Perform a system and install apt-cacher.
+# -----------------------------------------------------------------------------
+
+---
+
+- name: disable mlocate runs
+  command: chmod -x /etc/cron.daily/mlocate
+  ignore_errors: yes
+
+- name: updating the system
+  apt: update_cache=yes
+
+#
+# Installing the apt cache
+#
+
+- name: installing cacher
+  apt: pkg={{ item }} state=present
+  with_items:
+    - apt-cacher
+    - python-pip
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: setup cacher configuration
+  lineinfile:
+    dest:   /etc/default/apt-cacher
+    line:   "AUTOSTART=1"
+
+- name: new apt-cacher config file
+  template:
+    src:    apt-cacher.conf.j2
+    dest:   /etc/apt-cacher/apt-cacher.conf
+    owner:  root
+    group:  root
+    mode:   644
+    backup: yes
+
+#- name: restart apache
+#  service: name=apache2 state=restarted
+
+- name: restart apt-cacher
+  service: name=apt-cacher state=restarted
+
+- name: import existing packages
+  shell: /usr/share/apt-cacher/apt-cacher-import.pl -l /var/cache/apt/archives
+
+- name: set local proxy config
+  template: src=01proxy.j2 dest=/etc/apt/apt.conf.d/01proxy owner=root group=root mode=644
+
+- name: reinstalling the language pack
+  command: apt-get -y install --reinstall language-pack-en
+
+- name: updating the system
+  apt: update_cache=yes cache_valid_time=86400
+  notify: restart server
+
+- name: upgrading the system
+  apt: upgrade=dist
+  notify: restart server
+
+#
+# Installing the PIP cache
+#
+
+- name: install devpi PIP cache
+  pip: name=devpi-server
+
+- name: install service script
+  template: src=devpi.j2 dest=/etc/init.d/devpi owner=root group=root mode=766
+
+- name: start the devpi service
+  service: name=devpi state=restarted
+
+#
+# We should install devpi as a system process, so that it starts
+# during system reboot (in /etc/rcX.d/...). However, for some reason
+# that doesn't work, the process tries to start, but immediately fails
+# and finally is given up on (messages in /var/log/dmesg). Therefore,
+# we use the less ideal approach and start the service once a minute
+# via cron.
+#
+# If the system process problem could be solved, we should switch
+# to that approach.
+#
+- name: install cronjob for restarts
+  cron: name="devpi" job="service devpi start > /dev/null"
+

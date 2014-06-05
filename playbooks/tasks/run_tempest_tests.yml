@@ -1,0 +1,53 @@
+# Copyright 2014 Cisco Systems, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+# @author: Juergen Brendel, Cisco Systems, Inc.
+
+# -----------------------------------------------------------------------------
+# Running the tempest tests.
+# -----------------------------------------------------------------------------
+
+---
+
+- name: Initializing tests
+  shell: >
+      testr init
+      chdir={{ FILES.devstack_tempest_dir }}
+
+- name: Running tests
+  shell: >
+      testr run tempest.api.network.test_networks > {{ FILES.log_dir }}/tempest.log
+      chdir={{ FILES.devstack_tempest_dir }}
+  register: testr_result
+  ignore_errors: yes
+
+#- name: Getting result logs (stack_sh_err.log)
+#  fetch: >
+#      src={{ FILES.log_dir }}/stack.sh.log
+#      dest={{ FILES.test_result_directory }}/stack_sh.log
+#      flat=yes
+#  ignore_errors: yes
+  
+#- name: Getting result logs (tempest.log)
+#  fetch: >
+#      src={{ TEMPEST_LOG }}
+#      dest={{ FILES.test_result_directory }}/tempest.log
+#      flat=yes
+#  ignore_errors: yes
+  
+- debug: msg="Results at {{ DEVSTACK.result_url }}"
+ 
+- fail: msg="Tempest tests have failed!"
+  when: testr_result.rc != 0
+

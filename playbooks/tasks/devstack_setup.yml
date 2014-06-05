@@ -1,0 +1,100 @@
+# Copyright 2014 Cisco Systems, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+# @author: Juergen Brendel, Cisco Systems, Inc.
+
+# -----------------------------------------------------------------------------
+# Installing DevStack.
+# -----------------------------------------------------------------------------
+
+---
+
+#
+# Restart the OVS switch service
+#
+#- name: Restart OVS.
+#  service: name=openvswitch-switch state=restarted
+
+#
+# Patch stack.sh to call our patch script
+#
+#- name: Patching stack.sh
+#  shell: >
+#      patch -f -p1 -d {{ DEVSTACK_DOWNLOAD_DIR }} -i {{ SCRIPT_DIR }}/files/patches/stack_sh_patch.txt
+#- file: path={{ SCRIPT_DIR }}/files/patches/patch_neutron_bugs.sh mode=0755
+
+#
+# Patch lib/neutron to deal with issues introduced by https://review.openstack.org/#/c/76992/1/lib/neutronstack.sh
+#
+#- name: Patching lib/neutron
+#  shell: >
+#      patch -f -p1 -d {{ DEVSTACK_DOWNLOAD_DIR }} -i {{ SCRIPT_DIR }}/files/patches/lib_neutron_patch.txt
+
+#
+# Run the stack.sh command to install DevStack
+#
+- name: Run stack.sh. Log and error output in {{ FILES.log_dir }}
+  shell: >
+      ./stack.sh >> {{ FILES.log_dir }}/stack.sh.log 2>&1
+      chdir={{ FILES.devstack_download_dir }}
+ 
+#
+# Reset git and re-patch so that git won't complain when we pull patches
+# on top of changed source code.
+#
+#- name: Reset and re-patch
+#  sudo_user: "{{ STACK_USER }}"
+#  shell: >
+#      git reset --hard
+#      chdir={{ NEUTRON_DIR }}
+
+#
+# Patching the repository with the changes that are to be tested
+#
+#- name: Patching the repository
+#  shell: >
+#      git fetch {{ RUN_ENV.GERRIT_NAME }}{{ RUN_ENV.GERRIT_PROJECT }} {{ RUN_ENV.GERRIT_REFSPEC }}
+#      chdir={{ NEUTRON_DIR }}
+#- shell: >
+#      git checkout FETCH_HEAD
+#      chdir={{ NEUTRON_DIR }}
+
+#
+# Manually applying the patches once more, since they were removed
+# during the git reset.
+#
+#- name: Manually applying patches once more
+#  shell: >
+#      "{{ SCRIPT_DIR }}/files/patches/patch_neutron_bugs.sh"
+#      chdir={{ SCRIPT_DIR }}
+      
+#
+# Restarting services
+# Why as async? That as the only way to get some processes to stay alive
+# after the shell/session that started them went away.
+#
+#- name: Restarting all neutron services
+#  command: >
+#      python neutron_restarter.py {{ WORKSPACE }} &
+#      chdir={{ SCRIPT_DIR }}/files
+#  async: 30
+#  poll: 0
+
+#
+# Due to async of previous task, we now need to wait a little
+# to make sure it had time to complete.
+#
+- name: Delaying to allow restart to complete
+  command: sleep 15
+

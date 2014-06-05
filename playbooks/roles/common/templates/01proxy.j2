@@ -1,0 +1,5 @@
+{% if CACHE.pkg_cache == "create" %}
+Acquire::http::Proxy "http://{{ hostvars[groups['cache-hosts'][0]][NET.pub_eth_interface]['ipv4']['address'] }}:{{ CACHE.apt_cache_port }}";
+{% else %}
+Acquire::http::Proxy "http://{{ CACHE.pkg_cache_existing_ip_addr }}:{{ CACHE.apt_cache_port }}";
+{% endif %}

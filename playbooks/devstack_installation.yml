@@ -1,0 +1,71 @@
+# Copyright 2014 Cisco Systems, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+# @author: Juergen Brendel, Cisco Systems, Inc.
+
+# -----------------------------------------------------------------------------
+# This playbook performs the necessary setup steps on an OpenStack guest in
+# order to bring up devstack. It's assumed that all guests are in the 'cluster'
+# group, with one of the guests also in the 'controller' group and the others
+# in the 'compute' group.
+# -----------------------------------------------------------------------------
+
+---
+
+#
+# Basic system configuration: Ensure user and various system packages are
+# present, configure the use of apt and pip caches.
+#
+- hosts: cluster
+  sudo: yes
+  tasks:
+  - include: tasks/base_setup.yml
+
+- hosts: cluster
+  sudo: yes
+  sudo_user: "{{ USERS.stack_user }}"
+  tasks:
+  - include: tasks/user_devstack_prep.yml
+
+#
+# Important to setup devstack on the controller first, before
+# compute hosts are configured, so that the controller can
+# recognize the compute hosts.
+#
+- hosts: controller-hosts
+  sudo: yes
+  sudo_user: "{{ USERS.stack_user }}"
+  tasks:
+  - include: tasks/devstack_setup.yml
+
+- hosts: compute-hosts
+  sudo: yes
+  sudo_user: "{{ USERS.stack_user }}"
+  tasks:
+  - include: tasks/devstack_setup.yml
+
+#- hosts: localhost
+#  gather_facts: false
+#  sudo: yes
+#  tasks:
+#  - name: Create directory for local copy of result logs
+#    local_action: file path={{ FILES.test_result_dir }} state=directory
+
+- hosts: controller-hosts
+  sudo: yes
+  sudo_user: "{{ USERS.stack_user }}"
+  tasks:
+  - include: tasks/controller_os_config.yml
+  - include: tasks/run_tempest_tests.yml
+

@@ -1,0 +1,64 @@
+# Copyright 2014 Cisco Systems, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+# @author: Juergen Brendel, Cisco Systems, Inc.
+
+# -----------------------------------------------------------------------------
+# Perform a system update.
+#
+# Issue a notification to a "restart server" handler (if an update took place).
+# -----------------------------------------------------------------------------
+
+---
+
+- name: disable mlocate runs
+  command: chmod -x /etc/cron.daily/mlocate
+  ignore_errors: yes
+
+- name: set local proxy config
+  template: src=01proxy.j2 dest=/etc/apt/apt.conf.d/01proxy owner=root group=root mode=644
+  when: CACHE.pkg_cache == "create"  or  CACHE.pkg_cache == "use"
+
+- name: write PIP cache config for root
+  file: path=/root/.pip state=directory 
+  when: CACHE.pkg_cache == "use"  or  CACHE.pkg_cache == "create"
+
+- template: >
+        src=pip.conf.j2
+        dest=/root/.pip/pip.conf
+        owner=root group=root mode=644
+  when: CACHE.pkg_cache == "use"  or  CACHE.pkg_cache == "create"
+
+- name: write PIP cache config for stack user
+  sudo_user: "{{ USERS.stack_user }}"
+  file: path={{ FILES.stack_user_home_dir }}/.pip state=directory 
+  when: CACHE.pkg_cache == "use"  or  CACHE.pkg_cache == "create"
+
+- template: >
+        src=pip.conf.j2
+        dest={{ FILES.stack_user_home_dir }}/.pip/pip.conf
+        owner={{ USERS.stack_user}} group={{ USERS.stack_user }} mode=644
+  sudo_user: "{{ USERS.stack_user }}"
+  when: CACHE.pkg_cache == "use"  or  CACHE.pkg_cache == "create"
+
+- name: updating the system
+  apt: update_cache=yes cache_valid_time=86400
+  notify:
+  - restart server
+
+# Re-installing the language pack makes pesky 'locale' errors disappear
+- name: reinstalling the language pack
+  command: apt-get -y install --reinstall language-pack-en
+
+
