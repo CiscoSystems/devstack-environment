@@ -35,7 +35,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             ansible.playbook          = "site.yml"
             ansible.verbose          = "vvvv"
             ansible.inventory_path    = "vagrant_hosts_multi"
-            ansible.extra_vars        = "vars/vagrant_extra_vars.yml"
+            ansible.extra_vars        = "vars/extra_vars.yml"
             ansible.host_key_checking = false
         end
     end

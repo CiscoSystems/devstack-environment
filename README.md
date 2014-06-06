@@ -1,14 +1,17 @@
-devstack-environment
+Devstack-Environment
 ====================
 
-A single- or multi-node DevStack deployment driven by Vagrant and Ansible
+A single- or multi-node DevStack deployment driven by Vagrant and Ansible.
 
 This allows you to bring up a complete single- or multi-node DevStack
 deployment with just a single command.
 
+You can deploy either a virtual environment via Vagrant, or use the
+Ansible playbooks on their own to deploy on real hardware.
 
-Prerequisites
-=============
+
+Prerequisites (for Vagrant deployments)
+=======================================
 You need to have installed:
 
     - Virtualbox
@@ -27,8 +30,26 @@ as 12.04, for example), you could instead do:
     $ pip install ansible
 
 
-Instructions
-============
+Prerequisites (for hardware deployments)
+========================================
+You need to have installed:
+
+    - Ansible
+
+On Ubuntu based systems, you should be able to do this:
+
+    $ apt-get ansible
+
+If you want to make sure you have the latest version of Ansible (highly
+recommended), and you are still running an older version of Ubuntu (such
+as 12.04, for example), you could instead do:
+
+    $ apt-get install virtualbox vagrant python-pip
+    $ pip install ansible
+
+
+Instructions (for Vagrant deployments)
+======================================
 
     1. Clone this repository:
 
@@ -58,8 +79,39 @@ you can run 'source openrc admin demo', after which you can issue various
 OpenStack commands.
 
 
+Instructions (for hardware deployments)
+=======================================
+
+    0. Have some hardware machines available with fresh installs of
+       Ubuntu 14.04.
+
+    1. Clone this repository:
+
+        $ git clone git@github.com:CiscoSystems/devstack-environment.git
+
+    2. Change into the directory:
+
+        $ cd devstack-environment
+
+    3. Copy the file 'vagrant_hosts_multi' or rename it to 'hosts'.
+
+    4. Edit the 'hosts' file to change the IP addresses of your actual
+       machines. You don't have to use a cache machine, so the apt-pip-cache
+       machine may be removed.
+
+    5. Open the 'vars/extra_vars.yml' file. Edit the 'pub_eth_interface'
+       value as well as the 'CACHE.pkg_cache' and 'CACHE.pkg_cache_existing_ip_addr'
+       settings as needed.
+
+    6. Start the Ansible playbooks like so:
+
+        $ ansible-playbook -i hosts site.yml
+
+
 What does it do?
 ================
+If you use Vagrant:
+
 Have a look at the file 'Vagrantfile'. It describes to Vagrant which virtual
 machines it should create. You can see three machines: One just serves as
 an apt and pip cache (very useful), the other two are a controller and a
@@ -68,6 +120,11 @@ so OpenStack guests can also run on the controller machine).
 
 After the VMs are created, they are going to be provisioned via Ansible
 playbooks.
+
+If you use hardware:
+
+The Ansible playbooks will ensure that a suitable user is created and
+available and will download, configure and install DevStack as specified.
 
 
 FAQ
@@ -78,13 +135,17 @@ There are two ways to go about it:
 
 You can re-run the Ansible provisioning step with:
 
-    $ vagrant provision
+    $ vagrant provision                   <- if you use Vagrant
+
+    or
+
+    $ ansible-playbook -i hosts site.yml  <- if you use hardware
 
 This will visit the the existing compute and controller hosts, run
 "unstack.sh" and "clean.sh" before installing DevStack from scratch.
 
-If you wish to destroy the compute and controller host to make sure you
-have a fresh start, you can do these steps:
+If you use Vagrant and you wish to destroy the compute and controller
+host to make sure you have a fresh start, you can do these steps:
 
     $ vagrant destroy controller compute-1
     $ vagrant up
@@ -93,8 +154,8 @@ have a fresh start, you can do these steps:
 Note that we are avoiding destruction of the cache host. No need to do so.
 
 
-What if I want different IP addresses for my hosts?
----------------------------------------------------
+What if I want different IP addresses for my hosts with Vagrant?
+----------------------------------------------------------------
 In the Vargantfile you find this section:
 
     servers = {
@@ -127,12 +188,12 @@ same in the "vagrant_hosts_multi" file. In that case, find the start of the
 '[compute-hosts'] section in that file and remove the compute-1 entry.
 
 If you want more compte hosts, add them in the Vargantfile as well as the
-"vagrant_hosts_multi" file.
+"vagrant_hosts_multi" file (or your 'hosts' file if you use hardware).
 
 
-Where can I determine what version of DevStack I'm deploying?
--------------------------------------------------------------
-Find the "vars/vagrant_extra_vars.yml" file and look for the DEVSTACK section.
+Where can I specify what version of DevStack I'm deploying?
+-----------------------------------------------------------
+Find the "vars/extra_vars.yml" file and look for the DEVSTACK section.
 
 
 What if I want to use different modules/tunnels/settings for DevStack?
@@ -143,7 +204,7 @@ sub-directories, such as "gre". Now look inside there and you can find template
 files, one for the controller and one for the compute hosts. You can adjust the
 settings there as you wish.
 
-Now look back in the "vars/vagrant_extra_vars.yml" file and find the
+Now look back in the "vars/extra_vars.yml" file and find the
 DEVSTACK.tunnel_type setting. That setting may be "gre", for example. The
 value of this setting determines the sub-directory out of which the localrc
 files are taken. So, if you want to create your own configs, create a new
