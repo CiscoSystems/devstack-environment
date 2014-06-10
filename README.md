@@ -213,3 +213,13 @@ compute and controller hosts in there and adjust. Then change the 'tunnel_type'
 setting to the name of your new sub-directory.
 
 
+How do I access the Horizon web UI for the DevStack deployment?
+---------------------------------------------------------------
+Point your browser to the IP address of the controller host. If you use
+Vagrant, by default that address will be 192.168.99.11, so:
+
+    http://192.168.99.11
+
+If you changed the addresses (edited the Vagrantfile and host file), or use
+haardware servers, change the URL accordingly.
+
