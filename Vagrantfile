@@ -33,7 +33,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define last_host_name do |server_conf|
         server_conf.vm.provision "ansible" do |ansible|
             ansible.playbook          = "site.yml"
-            ansible.verbose          = "vvvv"
+            ansible.verbose          = "v"
             ansible.inventory_path    = "vagrant_hosts_multi"
             ansible.extra_vars        = "vars/extra_vars.yml"
             ansible.host_key_checking = false
