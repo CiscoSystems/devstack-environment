@@ -44,7 +44,7 @@ If you want to make sure you have the latest version of Ansible (highly
 recommended), and you are still running an older version of Ubuntu (such
 as 12.04, for example), you could instead do:
 
-    $ apt-get install virtualbox vagrant python-pip
+    $ apt-get install python-pip
     $ pip install ansible
 
 
