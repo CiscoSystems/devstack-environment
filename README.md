@@ -82,8 +82,10 @@ OpenStack commands.
 Instructions (for hardware deployments)
 =======================================
 
-    0. Have some hardware machines available with fresh installs of
-       Ubuntu 14.04.
+    0. Have some hardware machines available with fresh installs of Ubuntu 14.04.
+       Please make sure that you have a user account on each of those machines,
+       which allows password-less sudo. If you have an SSH key for password-less
+       login to those accounts, that's great as well, but is not mandatory.
 
     1. Clone this repository:
 
@@ -98,14 +100,27 @@ Instructions (for hardware deployments)
     4. Edit the 'hosts' file to change the IP addresses of your actual
        machines. You don't have to use a cache machine, so the apt-pip-cache
        machine may be removed.
+       
+    5. In the 'all-hosts' section of the hosts file add the 'ansible_ssh_user'
+       option in each of the host lines, like so:
 
-    5. Open the 'vars/extra_vars.yml' file. Edit the 'pub_eth_interface'
+            controller  ansible_ssh_host=192.168.99.11  ansible_ssh_user=ubuntu
+
+       Alternatively, if you have the same user on all hosts, add a single
+       "ansible_ssh_user=...." line in the "group_vars/all" file.
+
+       If you use SSH keys for login, use the "ansible_ssh_private_key_file"
+       option (either on a per-host basis in the hosts file, or in the
+       group_vars/all file) to point to your private key file in your file
+       system.
+
+    6. Open the 'vars/extra_vars.yml' file. Edit the 'pub_eth_interface'
        value as well as the 'CACHE.pkg_cache' and 'CACHE.pkg_cache_existing_ip_addr'
        settings as needed.
 
-    6. Start the Ansible playbooks like so:
+    7. Start the Ansible playbooks like so:
 
-        $ ansible-playbook -i hosts site.yml
+        $ ansible-playbook -i hosts -e "@vars/extra_vars.yml" site.yml
 
 
 What does it do?
