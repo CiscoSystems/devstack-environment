@@ -74,7 +74,7 @@ Instructions (for Vagrant deployments)
 
 You will then be logged in as user 'vagrant'. In your home directory you
 have a 'workspace' directory, inside of which you will find 'log' and
-'devstack'. On the controller, after changeing into the devstack directory,
+'devstack'. On the controller, after changing into the devstack directory,
 you can run 'source openrc admin demo', after which you can issue various
 OpenStack commands.
 
