@@ -45,7 +45,13 @@
   ignore_errors: True
 
 - name: Remove any old workspace directories if they existed already
-  shell: sudo rm -rf {{ FILES.workspace_dir }}/*
+  sudo: yes
+  shell: rm -rf {{ FILES.workspace_dir }}
+  ignore_errors: True
+
+- name: Remove old stack installation directory
+  sudo: yes
+  shell: rm -rf /opt/stack
   ignore_errors: True
 
 - name: Create workspace directory
