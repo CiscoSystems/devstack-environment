@@ -20,11 +20,11 @@
 
 
 FILES:
-    stack_user_home_dir:        "/home/vagrant"
-    workspace_dir:              "/home/vagrant/workspace"
-    scripts_dir:                "/home/vagrant/workspace/scripts"
-    log_dir:                    "/home/vagrant/workspace/logs"
-    devstack_download_dir:      "/home/vagrant/workspace/devstack"
+    stack_user_home_dir:        "/home/{{ USERS.stack_user }}"
+    workspace_dir:              "/home/{{ USERS.stack_user }}/workspace"
+    scripts_dir:                "/home/{{ USERS.stack_user }}/workspace/scripts"
+    log_dir:                    "/home/{{ USERS.stack_user }}/workspace/logs"
+    devstack_download_dir:      "/home/{{ USERS.stack_user }}/workspace/devstack"
     devstack_install_dir:       "/opt/stack"
     devstack_tempest_dir:       "/opt/stack/tempest"
     local_files_dir:            "files"
