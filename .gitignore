@@ -38,3 +38,5 @@ nosetests.xml
 *.swp
 
 .vagrant
+#IntelliJ Idea, IntelliJ PyCharm
+.idea

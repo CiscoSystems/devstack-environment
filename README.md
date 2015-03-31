@@ -236,5 +236,5 @@ Vagrant, by default that address will be 192.168.99.11, so:
     http://192.168.99.11
 
 If you changed the addresses (edited the Vagrantfile and host file), or use
-haardware servers, change the URL accordingly.
+hardware servers, change the URL accordingly.
 
