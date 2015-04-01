@@ -24,6 +24,10 @@
   command: chmod -x /etc/cron.daily/mlocate
   ignore_errors: yes
 
+- name: update PIP
+  command: easy_install -U pip
+  ignore_errors: yes
+
 - name: updating the system
   apt: update_cache=yes
 
